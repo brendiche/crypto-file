@@ -1,6 +1,6 @@
 use std::{env, process};
 
-use crypto_file::Config;
+use crypto_file::{Config , Mode};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -9,5 +9,10 @@ fn main() {
         process::exit(1);
     });
 
-    println!("{:?}", config);
+    let result_file = match config.mode {
+        Mode::Encrypt(_) => crypto_file::encrypt(&config.file_path).unwrap(),
+        Mode::Decrypt(_) => crypto_file::decrypt(&config.file_path).unwrap()
+    };
+
+    println!("{:?}", result_file);
 }
