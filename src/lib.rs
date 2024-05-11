@@ -1,14 +1,15 @@
 use std::path::Path;
 use std::error::Error;
-use std::io;
+use std::io::Write;
 use encryptfile as ef;
+use rpassword::read_password;
 
-#[derive(Debug)]
+
 pub enum Mode {
     Encrypt(String),
     Decrypt(String),
 }
-#[derive(Debug)]
+
 pub struct Config {
     pub file_path: String,
     pub mode: Mode,
@@ -34,12 +35,10 @@ impl Config {
     }
 
     pub fn get_key() -> String {
+        // TODO: add confirmation for key
         println!("Enter the crypto key: ");
-        let mut key = String::new();
-        io::stdin()
-            .read_line(&mut key)
-            .expect("Failed to read line");
-        key
+        std::io::stdout().flush().unwrap();
+        read_password().unwrap()
     }
 }
 
@@ -68,6 +67,7 @@ pub fn decrypt(file_path: &str) -> Result<String, Box<dyn Error>> {
     .add_output_option(ef::OutputOption::AllowOverwrite)
     .password(ef::PasswordType::Text(crypto_key.to_owned(), ef::PasswordKeyGenMethod::ReadFromFile))
     .decrypt();
+    // find a way to handle errors
     let _ = ef::process(&c).map_err(|e| panic!("error decrypting: {:?}", e));
     println!("decrypting {}", file_path);
     Ok(format!("decrypted_{}", file_path))
